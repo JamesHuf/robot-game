@@ -8,15 +8,13 @@ public class LaserEnemyAI : BaseEnemyAI
     GameObject player;
     NavMeshAgent agent;
 
-    private EnemyStates state;
+    private EnemyStates state = EnemyStates.alive;
 
     public GameObject laserbeamPrefab;
     private GameObject laserbeam;
     public float fireRate = 2.0f;
     private float nextFire = 0.0f;
     private AudioSource fireSound = null;
-
-    private const int baseHealth = 30;
 
     // Start is called before the first frame update
     void Start()
@@ -25,13 +23,6 @@ public class LaserEnemyAI : BaseEnemyAI
         agent = GetComponent<NavMeshAgent>();
 
         fireSound = GetComponent<AudioSource>();
-
-        state = EnemyStates.alive;
-        EnemyTarget target = GetComponent<EnemyTarget>();
-        if (target != null)
-        {
-            target.Initialize(baseHealth);
-        }
     }
 
     // Update is called once per frame

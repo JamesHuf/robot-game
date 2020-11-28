@@ -138,6 +138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f8c01299ed576941ae74264771cf0f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 30
   pickups:
   - {fileID: 7285246304016942731, guid: 192e837879ec6fa4ba7059b5c52530b0, type: 3}
   - {fileID: 7285246304016942731, guid: ee60bfca05d0d084aa7d92e12854cf69, type: 3}

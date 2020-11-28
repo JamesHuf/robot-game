@@ -2,15 +2,14 @@
 
 public abstract class ReactiveTarget : MonoBehaviour
 {
-    protected int maxHealth;
+    [Header("ReactiveTarget")]
+    [Tooltip("The maximum health of the target and the amount they will spawn with")]
+    [SerializeField] protected int maxHealth;
     protected int health;
 
-    // Constructor
-    // Parameter - health: determines the starting health and maxHealth of the target
-    public void Initialize(int health)
+    private void Start()
     {
-        maxHealth = health;
-        this.health = health;
+        health = maxHealth;
     }
 
     // Deal damage to the target

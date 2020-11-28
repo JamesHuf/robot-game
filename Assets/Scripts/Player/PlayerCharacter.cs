@@ -1,12 +1,5 @@
 ﻿public class PlayerCharacter : ReactiveTarget
 {
-    private static int baseHealth = 100;
-
-    public void Start()
-    {
-        Initialize(baseHealth);
-    }
-
     public override void Hit(int damage)
     {
         base.Hit(damage);

@@ -18,19 +18,11 @@ public class BomberEnemyAI : BaseEnemyAI
 
     private const float beepDelay = 0.5f;
 
-    private const int baseHealth = 20;
-
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.FindWithTag("Player");
         agent = GetComponent<NavMeshAgent>();
-
-        EnemyTarget target = GetComponent<EnemyTarget>();
-        if (target != null)
-        {
-            target.Initialize(baseHealth);
-        }
 
         StartCoroutine(beepForever());
     }

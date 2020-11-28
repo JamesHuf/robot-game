@@ -2,8 +2,14 @@
 
 public class EnemyTarget : ReactiveTarget
 {
+    [Header("References")]
+    [Tooltip("An array referencing all possible pickups spawned by this enemy")]
     [SerializeField] private GameObject[] pickups = null;
-    public DeviceTrigger trigger = null;
+
+    [Header("Properties")]
+    [SerializeField] private const int baseHealth = 20;
+
+    [HideInInspector] public DeviceTrigger trigger = null;
 
     // This function is called once the enemies health reaches 0
     // Purpose: Sends out death notification and starts death animation
