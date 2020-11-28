@@ -1,23 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SceneController : MonoBehaviour
 {
+    [Header("References")]
+    [Tooltip("Reference to all players in the game.")]
     [SerializeField] private PlayerCharacter[] players = null;
 
+    [Header("Enemy Spawning")]
+    [Tooltip("Reference to each enemy prefab that can be spawned ingame.")]
     [SerializeField] private GameObject[] enemyPrefabs = null;
+    [Tooltip("Parallel array to Enemy Prefabs. Contains the spawn rate of the corresponding enemy.")]
     [SerializeField] private int[] enemyWeights = null;
+    [Tooltip("Array containing empty objects designating spawn positions")]
+    [SerializeField] private Vector3[] spawnPos = null;
+    [SerializeField] private GameObject[] newSpawnPos = null;
 
     private const int baseEnemies = 3;
     private int enemiesToSpawn;
     private int currNumEnemies;
-    public const float baseSpawnRate = 2.0f;
-    public float spawnRate = 1.5f;
+    private const float baseSpawnRate = 2.0f;
+    private float spawnRate = 2.0f;
     private float nextSpawn = 0.0f;
     private float difficultyDelta = 1f;
-
-    [SerializeField] private Vector3[] spawnPos = null;
 
     private const int numWaves = 5;
     private int currWave = 0;
