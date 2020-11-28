@@ -12,8 +12,7 @@ public class SceneController : MonoBehaviour
     [Tooltip("Parallel array to Enemy Prefabs. Contains the spawn rate of the corresponding enemy.")]
     [SerializeField] private int[] enemyWeights = null;
     [Tooltip("Array containing empty objects designating spawn positions")]
-    [SerializeField] private Vector3[] spawnPos = null;
-    [SerializeField] private GameObject[] newSpawnPos = null;
+    [SerializeField] private GameObject[] spawnPoints = null;
 
     private const int baseEnemies = 3;
     private int enemiesToSpawn;
@@ -86,7 +85,7 @@ public class SceneController : MonoBehaviour
             if (randomWeight < enemyWeights[i])
             {
                 GameObject enemy = Instantiate(enemyPrefabs[i]) as GameObject;
-                enemy.transform.position = spawnPos[Random.Range(0, spawnPos.Length)];
+                enemy.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
                 return;
             }
             randomWeight -= enemyWeights[i];
