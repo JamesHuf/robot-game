@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class SceneController : MonoBehaviour
 {
@@ -14,14 +15,18 @@ public class SceneController : MonoBehaviour
     [Tooltip("Array containing empty objects designating spawn positions")]
     [SerializeField] private GameObject[] spawnPoints = null;
 
+    // Enemy spawning
     private const int baseEnemies = 3;
     private int enemiesToSpawn;
-    private int currNumEnemies;
+    private int currNumEnemies = 0;
     private const float baseSpawnRate = 2.0f;
-    private float spawnRate = 2.0f;
+    private float spawnRate;
     private float nextSpawn = 0.0f;
-    private float difficultyDelta = 1f;
+    private const float enemyCountDelta = 1f;
+    private const float spawnRateDelta = 0.95f;
+    private const float playersPreventSpawnRadius = 10f;
 
+    // Wave handling
     private const int numWaves = 5;
     private int currWave = 0;
     private const int healthOnWaveEnd = 25;
@@ -29,7 +34,7 @@ public class SceneController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currNumEnemies = 0;
+        spawnRate = baseSpawnRate;
         StartWave();
     }
 
@@ -44,8 +49,8 @@ public class SceneController : MonoBehaviour
 
         // Setup enemies for next wave
         currWave++;
-        enemiesToSpawn = (int)(baseEnemies * difficultyDelta * currWave);
-        spawnRate = baseSpawnRate / (difficultyDelta * currWave);
+        enemiesToSpawn = (int)(baseEnemies * enemyCountDelta * currWave);
+        spawnRate *= spawnRateDelta;
 
         // Broadcast start of new wave
         Messenger<int, int>.Broadcast(GameEvent.WAVE_STARTED, currWave, numWaves);
@@ -73,6 +78,8 @@ public class SceneController : MonoBehaviour
     // Select an enemy from a weighted-random list and spawn it in at a random spawn location
     private void SpawnEnemy()
     {
+        // Select the enemy type to spawn
+        int selectedEnemy = -1;
         int totalWeight = 0;
         foreach(int weight in enemyWeights)
         {
@@ -84,13 +91,42 @@ public class SceneController : MonoBehaviour
         {
             if (randomWeight < enemyWeights[i])
             {
-                GameObject enemy = Instantiate(enemyPrefabs[i]) as GameObject;
-                enemy.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-                return;
+                selectedEnemy = i;
+                break;
             }
             randomWeight -= enemyWeights[i];
         }
-        Debug.LogError("Failed to spawn enemy");
+
+        if (selectedEnemy == -1)
+        {
+            Debug.LogError("Failed to select enemy type");
+            return;
+        }
+
+        // Filter to valid Spawn positions
+        List<GameObject> filteredSpawnPoints = new List<GameObject>();
+        foreach (GameObject point in spawnPoints)
+        {
+            bool playerInRadius = false;
+
+            Collider[] cols = Physics.OverlapSphere(point.transform.position, playersPreventSpawnRadius);
+            foreach (var col in cols)
+            {
+                if (col.gameObject.tag == "Player")
+                {
+                    playerInRadius = true;
+                }
+            }
+
+            if (!playerInRadius)
+            {
+                filteredSpawnPoints.Add(point);
+            }
+        }
+
+        // Spawn the enemy
+        GameObject enemy = Instantiate(enemyPrefabs[selectedEnemy]) as GameObject;
+        enemy.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
     }
 
     private void OnDestroy()
