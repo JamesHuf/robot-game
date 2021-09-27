@@ -3,7 +3,6 @@
 public class RayShooter : MonoBehaviour
 {
     private new Camera camera;
-    private bool popupsOpen = false;
     [SerializeField] private GameObject sparkPrefab = null;
 
     [SerializeField] private AudioSource fireSound = null;
@@ -16,26 +15,10 @@ public class RayShooter : MonoBehaviour
         camera = GetComponentInChildren<Camera>();
     }
 
-    private void popupsChanged(int numPopups)
-    {
-        popupsOpen = numPopups > 0;
-    }
-
-    private void Awake()
-    {
-        Messenger<int>.AddListener(GameEvent.UI_POPUP_OPENED, popupsChanged);
-        Messenger<int>.AddListener(GameEvent.UI_POPUP_CLOSED, popupsChanged);
-    }
-    private void OnDestroy()
-    {
-        Messenger<int>.RemoveListener(GameEvent.UI_POPUP_OPENED, popupsChanged);
-        Messenger<int>.RemoveListener(GameEvent.UI_POPUP_CLOSED, popupsChanged);
-    }
-
     // Update is called once per frame
     void Update()
     {
-        if (!popupsOpen && Input.GetMouseButtonDown(0))
+        if (!UIController.PopupsOpen && Input.GetMouseButtonDown(0))
         {
             fireSound.Play();
 
