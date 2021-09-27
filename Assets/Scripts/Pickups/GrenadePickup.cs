@@ -2,14 +2,9 @@
 
 public class GrenadePickup : CollectibleItem
 {
-    protected override void OnTriggerEnter(Collider other)
+    protected override void Activate(PlayerCharacter activatingPlayer)
     {
-        GrenadeShooter shooter = other.GetComponentInChildren<GrenadeShooter>();
-        if (shooter != null)
-        {
-            // Give grenade and remove the pickup
-            shooter.AddGrenade();
-            Destroy(this.gameObject);
-        }
+        // Give grenade to activating player
+        activatingPlayer.AddGrenade();
     }
 }

@@ -19,7 +19,7 @@ public class EnemyTarget : ReactiveTarget
         BaseEnemyAI enemyAI = GetComponent<BaseEnemyAI>();
         if (enemyAI != null)
         {
-            Messenger.Broadcast(GameEvent.ENEMY_DEAD);
+            new EnemyDeadEvent().Fire();
             enemyAI.Stop();
         }
 

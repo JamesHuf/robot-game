@@ -27,7 +27,12 @@ public class UIController : MonoBehaviour
     public GameOverScreen gameOverScreen;
     [SerializeField] private VictoryScreen victoryScreen = null;
 
-    private int popupsOpen;
+    public static bool PopupsOpen { get; private set; }
+    private int numPopupsOpen;
+    int NumPopupsOpen
+    { get { return numPopupsOpen; }
+      set { numPopupsOpen = value; PopupsOpen = numPopupsOpen > 0; }
+    }
 
     // On pause: stop time and unlock the cursor
     private void PauseGame()
@@ -48,101 +53,98 @@ public class UIController : MonoBehaviour
     }
 
     // On enemy death: update the diplayed score
-    private void OnEnemyDead()
+    private void OnEnemyDead(EnemyDeadEvent ede)
     {
         score += scorePerKill;
         scoreValue.text = score.ToString();
     }
 
     // When player health changed: update the displayed health bar
-    private void OnHealthChanged(float healthPercentage)
+    private void OnHealthChanged(PlayerHealthChangedEvent phce)
     {
-        healthBar.fillAmount = healthPercentage;
-        healthBar.color = Color.Lerp(Color.red, Color.green, healthPercentage);
+        healthBar.fillAmount = phce.newHealth;
+        healthBar.color = Color.Lerp(Color.red, Color.green, phce.newHealth);
     }
 
     // Activate double points effect on pickup
-    private void OnDoublePoints()
+    private void OnDoublePoints(DoublePointsEvent dpe)
     {
         StartCoroutine(ActivateDoublePoints(doublePointTime));
     }
 
-    private void OnPopupOpened()
+    private void OnPopupOpened(PopupOpenedEvent poe)
     {
-        popupsOpen++;
-        Messenger<int>.Broadcast(GameEvent.UI_POPUP_OPENED, popupsOpen);
+        NumPopupsOpen++;
     }
 
-    private void OnPopupClosed()
+    private void OnPopupClosed(PopupClosedEvent pce)
     {
-        popupsOpen--;
-        Messenger<int>.Broadcast(GameEvent.UI_POPUP_CLOSED, popupsOpen);
+        NumPopupsOpen--;
     }
 
-    private void OnPlayerDead()
+    private void OnPlayerDead(PlayerDeadEvent pde)
     {
         PauseGame();
         gameOverScreen.Open();
     }
 
-    private void OnRestartGame()
+    private void OnRestartGame(GameRestartEvent gre)
     {
         ResumeGame();
         SceneManager.LoadScene(0);
     }
 
-    private void OnGameWon()
+    private void OnGameWon(GameWonEvent gwe)
     {
         PauseGame();
         victoryScreen.Open(score);
     }
 
-    private void OnWaveStart(int currWave, int maxWaves)
+    private void OnWaveStart(WaveStartedEvent wse)
     {
-        waveValue.text = currWave.ToString() + "/" + maxWaves.ToString();
+        waveValue.text = wse.currWave.ToString() + "/" + SceneController.NUM_WAVES.ToString();
     }
 
     // Update displayed grenade count if changed
-    private void OnGrenadeCountChanged(int grenadeCount)
+    private void OnGrenadeCountChanged(GrenadeCountChangedEvent gcce)
     {
-        if (grenadeCount == 0)
+        switch (gcce.newGrenadeCount)
         {
-            grenadeIndicator1.color = usedGrenade;
-            grenadeIndicator2.color = usedGrenade;
-            grenadeIndicator3.color = usedGrenade;
-        }
-        else if (grenadeCount == 1)
-        {
-            grenadeIndicator1.color = availableGrenade;
-            grenadeIndicator2.color = usedGrenade;
-            grenadeIndicator3.color = usedGrenade;
-        }
-        else if (grenadeCount == 2)
-        {
-            grenadeIndicator1.color = availableGrenade;
-            grenadeIndicator2.color = availableGrenade;
-            grenadeIndicator3.color = usedGrenade;
-        }
-        else
-        {
-            grenadeIndicator1.color = availableGrenade;
-            grenadeIndicator2.color = availableGrenade;
-            grenadeIndicator3.color = availableGrenade;
+            case 0:
+                grenadeIndicator1.color = usedGrenade;
+                grenadeIndicator2.color = usedGrenade;
+                grenadeIndicator3.color = usedGrenade;
+                break;
+            case 1:
+                grenadeIndicator1.color = availableGrenade;
+                grenadeIndicator2.color = usedGrenade;
+                grenadeIndicator3.color = usedGrenade;
+                break;
+            case 2:
+                grenadeIndicator1.color = availableGrenade;
+                grenadeIndicator2.color = availableGrenade;
+                grenadeIndicator3.color = usedGrenade;
+                break;
+            default:
+                grenadeIndicator1.color = availableGrenade;
+                grenadeIndicator2.color = availableGrenade;
+                grenadeIndicator3.color = availableGrenade;
+                break;
         }
     }
 
-    private void Awake()
+    private void OnEnable()
     {
-        Messenger.AddListener(GameEvent.ENEMY_DEAD, OnEnemyDead);
-        Messenger<float>.AddListener(GameEvent.HEALTH_CHANGED, OnHealthChanged);
-        Messenger.AddListener(GameEvent.POPUP_OPENED, OnPopupOpened);
-        Messenger.AddListener(GameEvent.POPUP_CLOSED, OnPopupClosed);
-        Messenger.AddListener(GameEvent.PLAYER_DEAD, OnPlayerDead);
-        Messenger.AddListener(GameEvent.RESTART_GAME, OnRestartGame);
-        Messenger.AddListener(GameEvent.DOUBLE_POINTS, OnDoublePoints);
-        Messenger.AddListener(GameEvent.GAME_WON, OnGameWon);
-        Messenger<int, int>.AddListener(GameEvent.WAVE_STARTED, OnWaveStart);
-        Messenger<int>.AddListener(GameEvent.GRENADE_COUNT_CHANGED, OnGrenadeCountChanged);
+        PopupOpenedEvent.Register(OnPopupOpened);
+        PopupClosedEvent.Register(OnPopupClosed);
+        DoublePointsEvent.Register(OnDoublePoints);
+        GrenadeCountChangedEvent.Register(OnGrenadeCountChanged);
+        WaveStartedEvent.Register(OnWaveStart);
+        EnemyDeadEvent.Register(OnEnemyDead);
+        PlayerHealthChangedEvent.Register(OnHealthChanged);
+        PlayerDeadEvent.Register(OnPlayerDead);
+        GameRestartEvent.Register(OnRestartGame);
+        GameWonEvent.Register(OnGameWon);
     }
 
     // Start is called before the first frame update
@@ -153,7 +155,7 @@ public class UIController : MonoBehaviour
         scoreValue.text = score.ToString();
 
         // init wave counter
-        waveValue.text = "0";
+        waveValue.text = "0/5";
 
         // init healthBar
         healthBar.fillAmount = 1;
@@ -167,7 +169,7 @@ public class UIController : MonoBehaviour
         optionsPopup.Close();
         gameOverScreen.Close();
         victoryScreen.Close();
-        popupsOpen = 0;
+        NumPopupsOpen = 0;
 
         // Hide powerups
         doublePointImage.enabled = false;
@@ -184,25 +186,25 @@ public class UIController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && popupsOpen == 0)
+        if (Input.GetKeyDown(KeyCode.Escape) && NumPopupsOpen == 0)
         {
             PauseGame();
             optionsPopup.Open();
         }
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        Messenger.RemoveListener(GameEvent.ENEMY_DEAD, OnEnemyDead);
-        Messenger<float>.RemoveListener(GameEvent.HEALTH_CHANGED, OnHealthChanged);
-        Messenger.RemoveListener(GameEvent.POPUP_OPENED, OnPopupOpened);
-        Messenger.RemoveListener(GameEvent.POPUP_CLOSED, OnPopupClosed);
-        Messenger.RemoveListener(GameEvent.PLAYER_DEAD, OnPlayerDead);
-        Messenger.RemoveListener(GameEvent.RESTART_GAME, OnRestartGame);
-        Messenger.RemoveListener(GameEvent.DOUBLE_POINTS, OnDoublePoints);
-        Messenger.RemoveListener(GameEvent.GAME_WON, OnGameWon);
-        Messenger<int, int>.RemoveListener(GameEvent.WAVE_STARTED, OnWaveStart);
-        Messenger<int>.RemoveListener(GameEvent.GRENADE_COUNT_CHANGED, OnGrenadeCountChanged);
+        PopupOpenedEvent.Unregister(OnPopupOpened);
+        PopupClosedEvent.Unregister(OnPopupClosed);
+        DoublePointsEvent.Unregister(OnDoublePoints);
+        GrenadeCountChangedEvent.Unregister(OnGrenadeCountChanged);
+        WaveStartedEvent.Unregister(OnWaveStart);
+        EnemyDeadEvent.Unregister(OnEnemyDead);
+        PlayerHealthChangedEvent.Unregister(OnHealthChanged);
+        PlayerDeadEvent.Unregister(OnPlayerDead);
+        GameRestartEvent.Unregister(OnRestartGame);
+        GameWonEvent.Unregister(OnGameWon);
     }
 
     // Only activate/disactivate double points if there is no other instance running

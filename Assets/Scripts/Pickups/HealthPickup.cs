@@ -2,16 +2,10 @@
 
 public class HealthPickup : CollectibleItem
 {
-    private int value = 25;
+    private const int healingValue = 25;
 
-    protected override void OnTriggerEnter(Collider other)
+    protected override void Activate(PlayerCharacter activatingPlayer)
     {
-        PlayerCharacter player = other.GetComponent<PlayerCharacter>();
-        if (player != null)
-        {
-            // apply health and remove the item
-            player.FirstAid(value);
-            Destroy(this.gameObject);
-        }
+        activatingPlayer.FirstAid(healingValue);
     }
 }

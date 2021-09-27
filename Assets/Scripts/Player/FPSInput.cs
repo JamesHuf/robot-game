@@ -12,7 +12,6 @@ public class FPSInput : MonoBehaviour
     const float lookSensitivity = 220.0f;
     // This will be changed if the player is aiming
     const float RotationMultiplier = 1.0f;
-    private bool popupsOpen = false;
 
     private float speed = 9.0f;
 
@@ -34,17 +33,6 @@ public class FPSInput : MonoBehaviour
         charController = GetComponent<CharacterController>();
     }
 
-    private void Awake()
-    {
-        Messenger<int>.AddListener(GameEvent.UI_POPUP_OPENED, popupsChanged);
-        Messenger<int>.AddListener(GameEvent.UI_POPUP_CLOSED, popupsChanged);
-    }
-    private void OnDestroy()
-    {
-        Messenger<int>.RemoveListener(GameEvent.UI_POPUP_OPENED, popupsChanged);
-        Messenger<int>.RemoveListener(GameEvent.UI_POPUP_CLOSED, popupsChanged);
-    }
-
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         Rigidbody body = hit.collider.attachedRigidbody;
@@ -57,7 +45,7 @@ public class FPSInput : MonoBehaviour
 
     private float getMouseInput(string axis)
     {
-        if(popupsOpen)
+        if(UIController.PopupsOpen)
         {
             return 0;
         }
@@ -74,11 +62,6 @@ public class FPSInput : MonoBehaviour
         #endif
 
         return input;
-    }
-
-    private void popupsChanged(int numPopups)
-    {
-        popupsOpen = numPopups > 0;
     }
 
     // Update is called once per frame

@@ -27,8 +27,8 @@ public class SceneController : MonoBehaviour
     private const float playersPreventSpawnRadius = 10f;
 
     // Wave handling
-    private const int numWaves = 5;
-    private int currWave = 0;
+    public int currWave { get; private set; }
+    public const int NUM_WAVES = 5;
     private const int healthOnWaveEnd = 25;
 
     // Start is called before the first frame update
@@ -53,12 +53,12 @@ public class SceneController : MonoBehaviour
         spawnRate *= spawnRateDelta;
 
         // Broadcast start of new wave
-        Messenger<int, int>.Broadcast(GameEvent.WAVE_STARTED, currWave, numWaves);
+        new WaveStartedEvent(currWave).Fire();
     }
 
-    private void Awake()
+    private void OnEnable()
     {
-        Messenger.AddListener(GameEvent.ENEMY_DEAD, OnEnemyDead);
+        EnemyDeadEvent.Register(OnEnemyDead);
     }
 
     // Update is called once per frame
@@ -112,7 +112,7 @@ public class SceneController : MonoBehaviour
             Collider[] cols = Physics.OverlapSphere(point.transform.position, playersPreventSpawnRadius);
             foreach (var col in cols)
             {
-                if (col.gameObject.tag == "Player")
+                if (col.gameObject.CompareTag("Player"))
                 {
                     playerInRadius = true;
                 }
@@ -129,27 +129,26 @@ public class SceneController : MonoBehaviour
         enemy.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        Messenger.RemoveListener(GameEvent.ENEMY_DEAD, OnEnemyDead);
+        EnemyDeadEvent.Unregister(OnEnemyDead);
     }
 
     // Start new wave if no enemies remaining in current wave
-    public void OnEnemyDead()
+    private void OnEnemyDead(EnemyDeadEvent ede)
     {
         currNumEnemies--;
 
         // Start new wave if no enemies remaining in wave
         if (currNumEnemies == 0 && enemiesToSpawn == 0)
         {
-            if (currWave < numWaves)
+            if (currWave < NUM_WAVES)
             {
                 StartWave();
             } else
             {
-                Messenger.Broadcast(GameEvent.GAME_WON);
+                new GameWonEvent().Fire();
             }
-            
         } else if (currNumEnemies == 0 && enemiesToSpawn > 0)
         {
             nextSpawn = Time.time;

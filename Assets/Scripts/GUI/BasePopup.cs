@@ -6,14 +6,14 @@ public abstract class BasePopup : MonoBehaviour
     public virtual void Open()
     {
         this.gameObject.SetActive(true);
-        Messenger.Broadcast(GameEvent.POPUP_OPENED);
+        new PopupOpenedEvent().Fire();
     }
 
     // Code run when popup is closed
     public virtual void Close()
     {
         this.gameObject.SetActive(false);
-        Messenger.Broadcast(GameEvent.POPUP_CLOSED);
+        new PopupClosedEvent().Fire();
     }
 
     public bool IsActive()

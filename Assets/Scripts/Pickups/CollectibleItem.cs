@@ -10,5 +10,16 @@ public abstract class CollectibleItem : MonoBehaviour
         transform.Rotate(0, 80 * Time.deltaTime, 0);
     }
 
-    protected virtual void OnTriggerEnter(Collider other){}
+    protected virtual void Activate(PlayerCharacter activatingPlayer){}
+
+    protected void OnTriggerEnter(Collider other)
+    {
+        PlayerCharacter player = other.GetComponent<PlayerCharacter>();
+        if (player != null)
+        {
+            // Broadcast activation if hit by player
+            Activate(player);
+            Destroy(this.gameObject);
+        }
+    }
 }

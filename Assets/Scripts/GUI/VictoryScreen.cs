@@ -23,6 +23,6 @@ public class VictoryScreen : BasePopup
     // Restart the game if related button clicked
     public void OnStartAgainButton()
     {
-        Messenger.Broadcast(GameEvent.RESTART_GAME);
+        new GameRestartEvent().Fire();
     }
 }
